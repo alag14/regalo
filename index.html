@@ -86,6 +86,33 @@
       filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2));
     }
     .gift:active { transform: scale(0.9); }
+
+    /* Bounce animation for first click */
+    @keyframes bounceGift {
+      0%   { transform: scale(1) translateY(0); }
+      20%  { transform: scale(1.2) translateY(-20px); }
+      40%  { transform: scale(0.95) translateY(0); }
+      60%  { transform: scale(1.1) translateY(-10px); }
+      80%  { transform: scale(0.98) translateY(0); }
+      100% { transform: scale(1) translateY(0); }
+    }
+    .gift.bounce {
+      animation: bounceGift 0.7s ease both;
+    }
+
+    /* Shake/excited animation — hint for second click */
+    @keyframes shakeReady {
+      0%, 100% { transform: rotate(0deg); }
+      20%  { transform: rotate(-8deg) scale(1.05); }
+      40%  { transform: rotate(8deg) scale(1.05); }
+      60%  { transform: rotate(-5deg) scale(1.05); }
+      80%  { transform: rotate(5deg) scale(1.05); }
+    }
+    .gift.ready {
+      animation: shakeReady 0.6s ease infinite;
+      filter: drop-shadow(0 0 14px rgba(255,220,50,0.9)) drop-shadow(0 8px 16px rgba(0,0,0,0.2));
+    }
+
     @keyframes float {
       0%, 100% { transform: translateY(0px); }
       50% { transform: translateY(-12px); }
@@ -96,6 +123,7 @@
       opacity: 0.8;
       margin-top: 10px;
       animation: pulse 2s ease-in-out infinite;
+      transition: opacity 0.3s;
     }
     @keyframes pulse {
       0%, 100% { opacity: 0.5; }
@@ -193,11 +221,11 @@
   y que sigas creciendo tanto personal como profesionalmente, Mucho Éxito!!!!</p>
 
   <div class="gift-wrapper">
-    <div class="gift" id="gift" onclick="openGift(event)">🎁</div>
-    <p class="tap-hint">Toca el regalo 👆</p>
+    <div class="gift" id="gift" onclick="handleGiftClick(event)">🎁</div>
+    <p class="tap-hint" id="tapHint">Toca el regalo 👆</p>
   </div>
 
-  <audio id="audio" src="https://github.com/alag14/regalo/blob/main/LAS%20MA%C3%91ANITAS%20_VICENTE%20FERNANDEZ_(MP3_160K)_1.mp3?raw=true"></audio>
+  <audio id="audio" src="https://github.com/alag14/regalo/blob/main/LAS%20MA%C3%91ANITAS%20_VICENTE%20FERNANDEZ_(MP3_160K)_1.mp3?raw=true" preload="none"></audio>
 
   <div class="gallery" id="gallery">
     <div class="photo">
@@ -222,29 +250,80 @@
   </div>
 
   <script>
-    let opened = false;
+    // 0 = sin tocar | 1 = primer clic (audio precargado, esperando 2do) | 2 = abierto
+    let clickState = 0;
 
-    function openGift(e) {
-      if (opened) return;
-      opened = true;
+    function handleGiftClick(e) {
+      if (clickState === 0) {
+        firstClick(e);
+      } else if (clickState === 1) {
+        secondClick(e);
+      }
+      // Si ya está abierto (2), no hacer nada
+    }
+
+    function firstClick(e) {
+      clickState = 1;
 
       const gift = document.getElementById('gift');
+      const hint = document.getElementById('tapHint');
+      const audio = document.getElementById('audio');
+
+      // Intentar precargar muteado; si falla no importa, el 2do clic hace play() fresco
+      audio.muted = true;
+      audio.volume = 0.1;
+      audio.play().catch(() => { audio.load(); });
+
+      // Efecto brinco: quitar float, poner bounce, luego poner "ready" (vibra suave)
+      gift.style.animation = 'none'; // detener float
+      void gift.offsetWidth; // reflow
+      gift.classList.add('bounce');
+
+      gift.addEventListener('animationend', function onBounceEnd() {
+        gift.removeEventListener('animationend', onBounceEnd);
+        gift.classList.remove('bounce');
+        gift.classList.add('ready'); // vibra indicando "¡estoy listo!"
+      }, { once: true });
+
+      // Actualizar hint
+      hint.textContent = '¡Toca de nuevo para abrir! 🎁✨';
+
+      createSparkles(e);
+    }
+
+    function secondClick(e) {
+      clickState = 2;
+
+      const gift = document.getElementById('gift');
+      const hint = document.getElementById('tapHint');
+
+      // Ocultar hint
+      hint.style.opacity = '0';
+      hint.style.pointerEvents = 'none';
+
+      // Animación de apertura
+      gift.classList.remove('ready');
       gift.style.animation = 'none';
       gift.style.transform = 'scale(1.4) rotate(10deg)';
       gift.style.transition = 'transform 0.3s';
+
       setTimeout(() => {
         gift.style.transform = 'scale(0)';
         gift.style.opacity = '0';
         gift.style.transition = 'transform 0.4s, opacity 0.4s';
       }, 300);
 
+      // Mostrar galería
       const gallery = document.getElementById('gallery');
       setTimeout(() => {
         gallery.classList.add('show');
       }, 600);
 
+      // Reproducir audio: siempre hacer play() fresco aquí (interacción garantizada)
       const audio = document.getElementById('audio');
+      audio.muted = false;
       audio.volume = 0.1;
+      audio.currentTime = 0;
       audio.play().catch(() => {});
 
       launchConfetti();
