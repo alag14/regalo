@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Feliz Cumple 🎉</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+      text-align: center;
+      color: white;
+    }
+
+    h1 {
+      margin-top: 50px;
+      font-size: 3em;
+    }
+
+    .gift {
+      font-size: 80px;
+      cursor: pointer;
+      margin-top: 50px;
+      transition: transform 0.3s;
+    }
+
+    .gift:hover {
+      transform: scale(1.2);
+    }
+
+    .gallery {
+      display: none;
+      margin-top: 30px;
+    }
+
+    .photo {
+      margin: 20px;
+    }
+
+    img {
+      width: 250px;
+      border-radius: 15px;
+    }
+
+    .message {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+
+    .final-message {
+      margin-top: 40px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎉 Feliz Cumpleaños 🎉</h1>
+  <p>Haz clic en el regalo 🎁</p>
+
+  <div class="gift" onclick="openGift()">🎁</div>
+
+  <!-- AUDIO -->
+  <audio id="audio" src="mananitas.mp3"></audio>
+
+  <div class="gallery" id="gallery">
+    <div class="photo">
+      <img src="foto1.jpg">
+      <div class="message">Aquí empezó todo 😄</div>
+    </div>
+
+    <div class="photo">
+      <img src="foto2.jpg">
+      <div class="message">Las desveladas valieron la pena 💻</div>
+    </div>
+
+    <div class="photo">
+      <img src="foto3.jpg">
+      <div class="message">Siempre una gran compañera 💙</div>
+    </div>
+
+    <div class="final-message">
+      Gracias por todos los momentos 💫
+    </div>
+  </div>
+
+  <script>
+    function openGift() {
+      document.getElementById("gallery").style.display = "block";
+
+      const audio = document.getElementById("audio");
+      audio.play();
+    }
+  </script>
+
+</body>
+</html>
